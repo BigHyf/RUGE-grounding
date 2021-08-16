@@ -64,93 +64,93 @@ class GroundAllRules():
     def groundRule(self, RuleType, Output):
         print("Start to propositionalize soft rules......")
         tmpLst = dict()
+        writer = open(Output, "w")
         with open(RuleType) as reader:
-            with open(Output, "w") as writer:
-                for line in reader:
-                    if line[0] != '?':
-                        continue
-                    bodys = line.split("=>")[0].strip().split("  ")
-                    heads = line.split("=>")[1].strip().split("  ")
+            for line in reader:
+                if line[0] != '?':
+                    continue
+                bodys = line.split("=>")[0].strip().split("  ")
+                heads = line.split("=>")[1].strip().split("  ")
 
-                    if len(bodys) == 3:
-                        bEntity1 = bodys[0]
-                        iFstRelation = self.relation2id[bodys[1]]
-                        bEntity2 = bodys[2]
+                if len(bodys) == 3:
+                    bEntity1 = bodys[0]
+                    iFstRelation = self.relation2id[bodys[1]]
+                    bEntity2 = bodys[2]
 
-                        hEntity1 = heads[0]
-                        iSndRelation = self.relation2id[heads[1]]
-                        hEntity2 = heads[2].split("\t")[0]
-                        confidence = heads[2].split("\t")[1]
-                        confi = float(confidence)
+                    hEntity1 = heads[0]
+                    iSndRelation = self.relation2id[heads[1]]
+                    hEntity2 = heads[2].split("\t")[0]
+                    confidence = heads[2].split("\t")[1]
+                    confi = float(confidence)
 
-                        iSize = len(self.relation2Tuple[iFstRelation])
-                        for iIndex in range(iSize):
-                            strValue = self.relation2Tuple[iFstRelation][iIndex]
-                            iSubjectID = self.entity2id[strValue.split("#")[0]]
-                            iObjectID = self.entity2id[strValue.split("#")[1]]
-                            self.MapVariable[bEntity1] = iSubjectID
-                            self.MapVariable[bEntity2] = iObjectID
-                            strKey = "(" + str(iSubjectID) + "\t" + str(iFstRelation) + "\t" + str(iObjectID) + ")\t" + "(" + str(self.MapVariable[hEntity1]) + "\t" + str(iSndRelation) + "\t" + str(self.MapVariable[hEntity2]) + ")"
-                            strCons = str(self.MapVariable[hEntity1]) + "\t" + str(iSndRelation) + "\t" + str(self.MapVariable[hEntity2])
-                            if (strKey not in tmpLst) and (strCons not in self.training2label):
-                                writer.write("2\t" + str(strKey) + "\t" + str(confi) + "\n")
-                                tmpLst[strKey] = True
-                            self.MapVariable.clear()
+                    iSize = len(self.relation2Tuple[iFstRelation])
+                    for iIndex in range(iSize):
+                        strValue = self.relation2Tuple[iFstRelation][iIndex]
+                        iSubjectID = self.entity2id[strValue.split("#")[0]]
+                        iObjectID = self.entity2id[strValue.split("#")[1]]
+                        self.MapVariable[bEntity1] = iSubjectID
+                        self.MapVariable[bEntity2] = iObjectID
+                        strKey = "(" + str(iSubjectID) + "\t" + str(iFstRelation) + "\t" + str(iObjectID) + ")\t" + "(" + str(self.MapVariable[hEntity1]) + "\t" + str(iSndRelation) + "\t" + str(self.MapVariable[hEntity2]) + ")"
+                        strCons = str(self.MapVariable[hEntity1]) + "\t" + str(iSndRelation) + "\t" + str(self.MapVariable[hEntity2])
+                        if (strKey not in tmpLst) and (strCons not in self.training2label):
+                            writer.write("2\t" + str(strKey) + "\t" + str(confi) + "\n")
+                            tmpLst[strKey] = True
+                        self.MapVariable.clear()
 
-                    elif len(bodys) == 6:
-                        bEntity1 = bodys[0].strip()
-                        iFstRelation = self.relation2id[bodys[1].strip()]
-                        bEntity2 = bodys[2].strip()
+                elif len(bodys) == 6:
+                    bEntity1 = bodys[0].strip()
+                    iFstRelation = self.relation2id[bodys[1].strip()]
+                    bEntity2 = bodys[2].strip()
 
-                        bEntity3 = bodys[3].strip()
-                        iSndRelation = self.relation2id[bodys[4].strip()]
-                        bEntity4 = bodys[5].strip()
+                    bEntity3 = bodys[3].strip()
+                    iSndRelation = self.relation2id[bodys[4].strip()]
+                    bEntity4 = bodys[5].strip()
 
-                        hEntity1 = heads[0].strip()
-                        iTrdRelation = self.relation2id[heads[1].strip()]
-                        hEntity2 = heads[2].split("\t")[0].strip()
-                        confidence = heads[2].split("\t")[1].strip()
-                        confi = float(confidence)
+                    hEntity1 = heads[0].strip()
+                    iTrdRelation = self.relation2id[heads[1].strip()]
+                    hEntity2 = heads[2].split("\t")[0].strip()
+                    confidence = heads[2].split("\t")[1].strip()
+                    confi = float(confidence)
 
-                        mapFstRel = self.RelSub2Obj[iFstRelation]
-                        mapSndRel = self.RelSub2Obj[iSndRelation]
-                        lstEntity1 = iter(mapFstRel.keys())
-                        for iEntity1ID in lstEntity1:
+                    mapFstRel = self.RelSub2Obj[iFstRelation]
+                    mapSndRel = self.RelSub2Obj[iSndRelation]
+                    lstEntity1 = iter(mapFstRel.keys())
+                    for iEntity1ID in lstEntity1:
+                        self.MapVariable[bEntity1] = iEntity1ID
+                        lstEntity2 = list(mapFstRel[iEntity1ID].keys())
+                        iFstSize = len(lstEntity2)
+                        for iFstIndex in range(iFstSize):
+                            iEntity2ID = lstEntity2[iFstIndex]
                             self.MapVariable[bEntity1] = iEntity1ID
-                            lstEntity2 = mapFstRel[iEntity1ID].keys()
-                            iFstSize = len(lstEntity2)
-                            for iFstIndex in range(iFstSize):
-                                iEntity2ID = list(lstEntity2)[iFstIndex]
+                            self.MapVariable[bEntity2] = iEntity2ID
+                            lstEntity3 = list()
+                            if (bEntity3 in self.MapVariable) and (self.MapVariable[bEntity3] in mapSndRel):
+                                lstEntity3.append(self.MapVariable[bEntity3])
+                            elif bEntity3 not in self.MapVariable:
+                                lstEntity3 = list(mapSndRel.keys())
+                            iSndSize = len(lstEntity3)
+                            for iSndIndex in range(iSndSize):
+                                iEntity3ID = lstEntity3[iSndIndex]
                                 self.MapVariable[bEntity1] = iEntity1ID
                                 self.MapVariable[bEntity2] = iEntity2ID
-                                lstEntity3 = list()
-                                if (bEntity3 in self.MapVariable) and (self.MapVariable[bEntity3] in mapSndRel):
-                                    lstEntity3.append(self.MapVariable[bEntity3])
-                                elif bEntity3 not in self.MapVariable:
-                                    lstEntity3 = mapSndRel.keys()
-                                iSndSize = len(lstEntity3)
-                                for iSndIndex in range(iSndSize):
-                                    iEntity3ID = list(lstEntity3)[iSndIndex]
-                                    self.MapVariable[bEntity1] = iEntity1ID
-                                    self.MapVariable[bEntity2] = iEntity2ID
-                                    self.MapVariable[bEntity3] = iEntity3ID
-                                    lstEntity4 = list()
-                                    if (bEntity4 in self.MapVariable) and (self.MapVariable[bEntity4] in mapSndRel[iEntity3ID]):
-                                        lstEntity4.append(self.MapVariable[bEntity4])
-                                    elif bEntity4 not in self.MapVariable:
-                                        lstEntity4 = mapSndRel[iEntity3ID].keys()
-                                    iTrdSize = len(lstEntity4)
-                                    for iTrdIndex in range(iTrdSize):
-                                        iEntity4ID = list(lstEntity4)[iTrdIndex]
-                                        self.MapVariable[bEntity4] = iEntity4ID
-                                        infer = str(self.MapVariable[hEntity1]) + "\t" + str(iTrdRelation) + "\t" + str(self.MapVariable[hEntity2])
-                                        strKey = "(" + str(iEntity1ID) + "\t" + str(iFstRelation) + "\t" + str(iEntity2ID) + ")\t" + "(" + str(iEntity3ID) + "\t" + str(iSndRelation) + "\t" + str(iEntity4ID) + ")\t" + "(" + str(self.MapVariable[hEntity1]) + "\t" + str(iTrdRelation) + "\t" + str(self.MapVariable[hEntity2]) + ")"
-                                        if (strKey not in tmpLst) and (infer not in self.training2label):
-                                            writer.write("3\t" + str(strKey) + "\t" + str(confi) + "\n")
-                                            tmpLst[strKey] = True
-                                    self.MapVariable.clear()
+                                self.MapVariable[bEntity3] = iEntity3ID
+                                lstEntity4 = list()
+                                if (bEntity4 in self.MapVariable) and (self.MapVariable[bEntity4] in mapSndRel[iEntity3ID]):
+                                    lstEntity4.append(self.MapVariable[bEntity4])
+                                elif bEntity4 not in self.MapVariable:
+                                    lstEntity4 = list(mapSndRel[iEntity3ID].keys())
+                                iTrdSize = len(lstEntity4)
+                                for iTrdIndex in range(iTrdSize):
+                                    iEntity4ID = lstEntity4[iTrdIndex]
+                                    self.MapVariable[bEntity4] = iEntity4ID
+                                    infer = str(self.MapVariable[hEntity1]) + "\t" + str(iTrdRelation) + "\t" + str(self.MapVariable[hEntity2])
+                                    strKey = "(" + str(iEntity1ID) + "\t" + str(iFstRelation) + "\t" + str(iEntity2ID) + ")\t" + "(" + str(iEntity3ID) + "\t" + str(iSndRelation) + "\t" + str(iEntity4ID) + ")\t" + "(" + str(self.MapVariable[hEntity1]) + "\t" + str(iTrdRelation) + "\t" + str(self.MapVariable[hEntity2]) + ")"
+                                    if (strKey not in tmpLst) and (infer not in self.training2label):
+                                        writer.write("3\t" + str(strKey) + "\t" + str(confi) + "\n")
+                                        tmpLst[strKey] = True
                                 self.MapVariable.clear()
                             self.MapVariable.clear()
+                        self.MapVariable.clear()
         print("groundRule Success!")
 
 
